@@ -9,7 +9,7 @@ namespace EFRepository.Context
         {
         }
 
-        public IDbSet<SaleOrder> SaleOrder { get; set; }
-        public IDbSet<SaleOrderItem> SaleOrderItem { get; set; }
+        public IDbSet<SaleOrder> SaleOrders { get; set; }
+        public IDbSet<SaleOrderItem> SaleOrderItems { get; set; }
     }
 }
