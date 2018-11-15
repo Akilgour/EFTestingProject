@@ -6,7 +6,9 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EFRepository.Test.Repositorys
 {
@@ -32,6 +34,20 @@ namespace EFRepository.Test.Repositorys
             Assert.AreEqual(expected, value.CustomerFirstName);
         }
 
+        [TestCase(saleOrderIdOne, "John")]
+        [TestCase(saleOrderIdTwo, "Paul")]
+        [TestCase(saleOrderIdThree, "George")]
+        [TestCase(saleOrderIdFour, "Ringo")]
+        public async Task GetByIdAsycAsync(string Id, string expected)
+        {
+            //arrange
+            var salesOrderRepository = new SalesOrderRepository(SetUpContext());
+            //act
+            var value = await salesOrderRepository.GetByIdAsync(new Guid(Id));
+            //assert
+            Assert.AreEqual(expected, value.CustomerFirstName);
+        }
+
         [TestCase(saleOrderIdOne, 1)]
         [TestCase(saleOrderIdTwo, 2)]
         [TestCase(saleOrderIdThree, 6)]
@@ -42,6 +58,20 @@ namespace EFRepository.Test.Repositorys
             var salesOrderRepository = new SalesOrderRepository(SetUpContext());
             //act
             var value = salesOrderRepository.GetById(new Guid(Id));
+            //assert
+            Assert.AreEqual(expected, value.SaleOrderItems.Count());
+        }
+        
+        [TestCase(saleOrderIdOne, 1)]
+        [TestCase(saleOrderIdTwo, 2)]
+        [TestCase(saleOrderIdThree, 6)]
+        [TestCase(saleOrderIdFour, 3)]
+        public async Task GetById_SaleOrderItemsCountAsync(string Id, int expected)
+        {
+            //arrange
+            var salesOrderRepository = new SalesOrderRepository(SetUpContext());
+            //act
+            var value = await salesOrderRepository.GetByIdAsync(new Guid(Id));
             //assert
             Assert.AreEqual(expected, value.SaleOrderItems.Count());
         }
@@ -60,7 +90,7 @@ namespace EFRepository.Test.Repositorys
             var salesOrderFour = new SaleOrder() { Id = new Guid(saleOrderIdFour), CustomerFirstName = "Ringo" };
             salesOrderFour.SaleOrderItems = new List<SaleOrderItem>() { new SaleOrderItem(), new SaleOrderItem(), new SaleOrderItem() };
 
-            var SaleOrders = new List<SaleOrder>
+            var saleOrders = new List<SaleOrder>
             {
                salesOrderOne,
                salesOrderTwo,
@@ -69,7 +99,7 @@ namespace EFRepository.Test.Repositorys
             }.AsQueryable();
 
             var context = Substitute.For<MyContext>();
-            context.SaleOrders = Substitute.For<IDbSet<SaleOrder>>().Initialize(SaleOrders);
+            context.SaleOrders = Substitute.For<IDbSet<SaleOrder>, IDbAsyncEnumerable<SaleOrder>>().Initialize(saleOrders);
             return context;
         }
     }
